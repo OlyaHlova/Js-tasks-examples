@@ -1,0 +1,70 @@
+//Task
+
+let a: any;
+let b: any;
+function doSomehing(a: any, b: any) {
+   // use both a, b
+}
+async function x () {
+   a.load("xxx");
+   b.load("yyy");
+   ...
+   a.onload = () => {
+      doSomehing(a, b);
+   };
+   b.onload = () => {
+      doSomehing(a, b);
+   };
+   ...
+}
+
+
+// -----------------------------
+// Solution using promisify
+
+import { promisify } from 'util';
+
+let a: any;
+let b: any;
+
+function doSomething(a: any, b: any) {
+    // use both a, b
+}
+
+const loadPromiseA = promisify(a.load).bind(a);
+const loadPromiseB = promisify(b.load).bind(b);
+
+async function x () {
+   await Promise.all([loadPromiseA("xxx"), loadPromiseB("yyy")]);
+   doSomething(a, b);
+}
+
+
+// --------------------------------
+// Solution using observable 
+
+import { Observable, fromEvent } from 'rxjs';
+import { map, filter, mergeMap } from 'rxjs/operators';
+
+let a: any;
+let b: any;
+
+function doSomething(a: any, b: any) {
+   // use both a, b
+}
+
+async function x() {
+   const loadA$ = fromEvent(a, 'load').pipe(
+      map(() => a)
+   );
+   const loadB$ = fromEvent(b, 'load').pipe(
+      map(() => b)
+   );
+
+   Observable.merge(loadA$, loadB$).subscribe(([objA, objB]) => {
+      doSomething(objA, objB);
+   });
+
+   a.load("xxx");
+   b.load("yyy");
+}
